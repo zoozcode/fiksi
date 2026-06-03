@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank Sampah Laut Digital</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Nunito:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f7f4;
+  --bg2: #e3f2ed;
+  --card: #ffffff;
+  --ocean: #006d5b;
+  --ocean-dark: #004d40;
+  --ocean-light: #00897b;
+  --teal: #00bcd4;
+  --teal-light: #e0f7fa;
+  --sand: #fff8e1;
+  --amber: #ffa000;
+  --amber-light: #fff3e0;
+  --coral: #e53935;
+  --coral-light: #ffebee;
+  --green: #43a047;
+  --green-light: #e8f5e9;
+  --text: #1a2e28;
+  --text2: #4a6c5e;
+  --text3: #8aab9c;
+  --border: #c8e6c9;
+  --shadow: 0 4px 24px rgba(0,109,91,.10);
+  --shadow-lg: 0 8px 40px rgba(0,109,91,.15);
+  --radius: 20px;
+  --radius-sm: 12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ====== LAYOUT ====== */
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+.topbar {
+  grid-column: 1/-1;
+  background: var(--ocean-dark);
+  color: #fff;
+  padding: .9rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+  box-shadow: 0 2px 16px rgba(0,0,0,.2);
+}
+.topbar-brand {
+  display: flex; align-items: center; gap: .75rem;
+  font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 800;
+}
+.topbar-brand .logo {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: linear-gradient(135deg, #00bcd4, #00897b);
+  display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+}
+.topbar-right { display: flex; align-items: center; gap: 1rem; }
+.topbar-notif {
+  width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.1);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  position: relative; transition: background .2s;
+}
+.topbar-notif:hover { background: rgba(255,255,255,.2); }
+.notif-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 8px; height: 8px; border-radius: 50%; background: #ffa000;
+  border: 2px solid var(--ocean-dark);
+}
+.topbar-user {
+  display: flex; align-items: center; gap: .5rem;
+  background: rgba(255,255,255,.1); border-radius: 999px;
+  padding: .35rem .9rem .35rem .35rem; cursor: pointer;
+  transition: background .2s;
+}
+.topbar-user:hover { background: rgba(255,255,255,.18); }
+.user-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #ffa000, #ff6f00);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .8rem; font-weight: 700;
+}
+.topbar-user span { font-size: .85rem; font-weight: 600; }
+
+/* ====== SIDEBAR ====== */
+.sidebar {
+  background: var(--ocean-dark);
+  padding: 1.5rem 1rem;
+  position: sticky; top: 56px; height: calc(100vh - 56px);
+  overflow-y: auto; display: flex; flex-direction: column; gap: .35rem;
+}
+.sidebar-section-label {
+  font-size: .65rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: rgba(255,255,255,.35);
+  padding: .5rem .75rem .25rem; margin-top: .5rem;
+}
+.nav-item {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .7rem .9rem; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all .2s;
+  color: rgba(255,255,255,.6); font-size: .9rem; font-weight: 600;
+  text-decoration: none;
+}
+.nav-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+.nav-item.active {
+  background: linear-gradient(90deg, rgba(0,188,212,.25), rgba(0,188,212,.1));
+  color: #fff;
+  border-left: 3px solid var(--teal);
+}
+.nav-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+.nav-badge {
+  margin-left: auto; background: var(--amber);
+  color: #fff; font-size: .65rem; font-weight: 700;
+  padding: .15rem .45rem; border-radius: 999px;
+}
+
+/* ====== MAIN CONTENT ====== */
+.main-content {
+  padding: 2rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 56px);
+}
+
+/* ====== PAGE SECTIONS ====== */
+.page { display: none; }
+.page.active { display: block; animation: fadeIn .3s ease; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem; font-weight: 800; color: var(--ocean-dark);
+  margin-bottom: .35rem;
+}
+.page-sub { color: var(--text2); font-size: .9rem; margin-bottom: 2rem; }
+
+/* ====== CARDS ====== */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem; font-weight: 700; color: var(--ocean-dark);
+  margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+
+/* ====== DASHBOARD ====== */
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 1.5rem;
+}
+.kpi-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.25rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  position: relative; overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+.kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.kpi-card::after {
+  content: ''; position: absolute; right: -15px; top: -15px;
+  width: 70px; height: 70px; border-radius: 50%;
+  opacity: .08;
+}
+.kpi-card.ocean::after { background: var(--ocean); }
+.kpi-card.amber::after { background: var(--amber); }
+.kpi-card.teal::after { background: var(--teal); }
+.kpi-card.green::after { background: var(--green); }
+.kpi-label { font-size: .78rem; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .5rem; }
+.kpi-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.7rem; font-weight: 600; color: var(--ocean-dark);
+  line-height: 1;
+}
+.kpi-val.amber { color: var(--amber); }
+.kpi-val.teal { color: var(--teal); }
+.kpi-val.green { color: var(--green); }
+.kpi-delta {
+  margin-top: .4rem; font-size: .78rem; font-weight: 600;
+  display: flex; align-items: center; gap: .25rem;
+}
+.kpi-delta.up { color: var(--green); }
+.kpi-delta.down { color: var(--coral); }
+
+.dash-grid { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; }
+.dash-grid-full { grid-column: 1/-1; }
+
+/* Activity list */
+.activity-list { display: flex; flex-direction: column; gap: .75rem; }
+.activity-item {
+  display: flex; align-items: center; gap: 1rem;
+  padding: .85rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 1px solid transparent;
+  transition: border-color .2s;
+}
+.activity-item:hover { border-color: var(--border); }
+.act-icon {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+}
+.act-icon.botol { background: var(--teal-light); }
+.act-icon.campuran { background: var(--amber-light); }
+.act-icon.tukar { background: var(--green-light); }
+.act-icon.styro { background: var(--coral-light); }
+.act-body { flex: 1; }
+.act-name { font-size: .9rem; font-weight: 700; color: var(--text); }
+.act-desc { font-size: .78rem; color: var(--text3); margin-top: .15rem; }
+.act-right { text-align: right; }
+.act-poin {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .95rem; font-weight: 600; color: var(--ocean);
+}
+.act-time { font-size: .72rem; color: var(--text3); margin-top: .15rem; }
+
+/* Ranking */
+.rank-list { display: flex; flex-direction: column; gap: .6rem; }
+.rank-item {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .6rem .75rem; border-radius: var(--radius-sm); background: var(--bg);
+}
+.rank-num {
+  width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+}
+.rank-1 { background: #ffd54f; color: #5d4037; }
+.rank-2 { background: #b0bec5; color: #37474f; }
+.rank-3 { background: #a1887f; color: #fff; }
+.rank-other { background: var(--bg2); color: var(--text2); }
+.rank-name { flex: 1; font-size: .875rem; font-weight: 600; }
+.rank-poin {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .85rem; color: var(--ocean); font-weight: 600;
+}
+
+/* ====== FORM SETORAN ====== */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.form-group { display: flex; flex-direction: column; gap: .5rem; }
+.form-group.full { grid-column: 1/-1; }
+label { font-size: .82rem; font-weight: 700; color: var(--text2); letter-spacing: .03em; }
+input, select, textarea {
+  font-family: 'Nunito', sans-serif;
+  width: 100%; padding: .7rem 1rem; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); background: var(--bg);
+  color: var(--text); font-size: .9rem; transition: border-color .2s, box-shadow .2s;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--ocean-light);
+  box-shadow: 0 0 0 3px rgba(0,137,123,.1);
+}
+textarea { resize: vertical; min-height: 80px; }
+
+.sampah-selector {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem;
+  margin-bottom: 1.5rem;
+}
+.sampah-opt {
+  border: 2px solid var(--border); border-radius: var(--radius-sm);
+  padding: 1rem; text-align: center; cursor: pointer;
+  transition: all .2s; background: var(--card); position: relative;
+}
+.sampah-opt:hover { border-color: var(--ocean-light); background: var(--teal-light); }
+.sampah-opt.selected { border-color: var(--ocean); background: var(--teal-light); }
+.sampah-opt.selected::after {
+  content: '✓'; position: absolute; top: .4rem; right: .5rem;
+  color: var(--ocean); font-weight: 700; font-size: .8rem;
+}
+.sampah-icon { font-size: 1.8rem; margin-bottom: .4rem; }
+.sampah-name { font-size: .8rem; font-weight: 700; color: var(--text); }
+.sampah-poin { font-size: .72rem; color: var(--ocean); font-weight: 600; margin-top: .15rem; }
+
+.poin-preview {
+  background: linear-gradient(135deg, var(--ocean-dark), var(--ocean-light));
+  border-radius: var(--radius); padding: 1.5rem;
+  color: #fff; text-align: center; margin-bottom: 1.5rem;
+}
+.poin-preview-label { font-size: .8rem; opacity: .75; letter-spacing: .08em; text-transform: uppercase; margin-bottom: .25rem; }
+.poin-preview-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 3rem; font-weight: 600; line-height: 1;
+}
+.poin-preview-sub { font-size: .8rem; opacity: .7; margin-top: .25rem; }
+
+/* QR Modal */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--card); border-radius: var(--radius);
+  padding: 2.5rem; max-width: 380px; width: 90%;
+  text-align: center; animation: popIn .3s cubic-bezier(.34,1.56,.64,1) both;
+  box-shadow: 0 24px 80px rgba(0,0,0,.3);
+}
+@keyframes popIn { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+.qr-box {
+  width: 180px; height: 180px; margin: 1.5rem auto;
+  border-radius: 16px; background: #fff; padding: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+  display: flex; align-items: center; justify-content: center;
+}
+.qr-box canvas { width: 100% !important; height: 100% !important; }
+.modal h3 { font-family: 'Syne', sans-serif; font-size: 1.2rem; color: var(--ocean-dark); }
+.modal p { font-size: .85rem; color: var(--text2); margin: .5rem 0 0; }
+
+/* ====== TUKAR POIN ====== */
+.reward-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+.reward-card {
+  background: var(--card); border-radius: var(--radius);
+  border: 2px solid var(--border); padding: 1.4rem;
+  text-align: center; cursor: pointer;
+  transition: all .25s; position: relative; overflow: hidden;
+}
+.reward-card:hover { border-color: var(--ocean); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.reward-card.claimed { opacity: .5; cursor: not-allowed; }
+.reward-icon { font-size: 2.4rem; margin-bottom: .75rem; }
+.reward-name { font-weight: 700; font-size: .95rem; color: var(--text); margin-bottom: .3rem; }
+.reward-desc { font-size: .78rem; color: var(--text3); margin-bottom: .9rem; line-height: 1.4; }
+.reward-cost {
+  display: inline-flex; align-items: center; gap: .35rem;
+  background: var(--teal-light); color: var(--ocean);
+  font-size: .82rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+  padding: .3rem .75rem; border-radius: 999px;
+}
+.reward-badge {
+  position: absolute; top: .6rem; right: .6rem;
+  background: var(--amber); color: #fff; font-size: .65rem; font-weight: 700;
+  padding: .15rem .4rem; border-radius: 999px;
+}
+
+/* Poin strip */
+.poin-strip {
+  background: linear-gradient(135deg, var(--ocean-dark), #00695c);
+  border-radius: var(--radius); padding: 1.25rem 1.75rem;
+  color: #fff; display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2rem; box-shadow: var(--shadow-lg);
+}
+.poin-strip-left { display: flex; flex-direction: column; gap: .2rem; }
+.poin-strip-label { font-size: .75rem; opacity: .7; text-transform: uppercase; letter-spacing: .1em; }
+.poin-strip-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2rem; font-weight: 600;
+}
+.poin-strip-right { font-size: 3rem; opacity: .3; }
+
+/* ====== RIWAYAT ====== */
+.filter-bar {
+  display: flex; gap: .75rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+}
+.filter-btn {
+  padding: .45rem 1.1rem; border-radius: 999px;
+  border: 1.5px solid var(--border); background: var(--card);
+  font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 600;
+  color: var(--text2); cursor: pointer; transition: all .2s;
+}
+.filter-btn.active, .filter-btn:hover {
+  background: var(--ocean); border-color: var(--ocean); color: #fff;
+}
+
+.table-wrap { overflow-x: auto; border-radius: var(--radius-sm); }
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+th {
+  background: var(--ocean-dark); color: rgba(255,255,255,.85);
+  font-family: 'Syne', sans-serif; font-size: .78rem; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+  padding: .9rem 1rem; text-align: left; white-space: nowrap;
+}
+th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+th:last-child { border-radius: 0 var(--radius-sm) 0 0; }
+td { padding: .8rem 1rem; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+.badge {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .25rem .7rem; border-radius: 999px; font-size: .75rem; font-weight: 700;
+}
+.badge-botol { background: var(--teal-light); color: var(--teal); }
+.badge-campuran { background: var(--amber-light); color: var(--amber); }
+.badge-styro { background: var(--coral-light); color: var(--coral); }
+.badge-tukar { background: var(--green-light); color: var(--green); }
+.badge-verif { background: #e8eaf6; color: #3949ab; }
+
+/* ====== NELAYAN / PROFIL ====== */
+.profile-hero {
+  background: linear-gradient(135deg, var(--ocean-dark), var(--ocean-light));
+  border-radius: var(--radius); padding: 2rem;
+  color: #fff; display: flex; align-items: center; gap: 1.5rem;
+  margin-bottom: 1.5rem; box-shadow: var(--shadow-lg);
+}
+.profile-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; flex-shrink: 0;
+  border: 3px solid rgba(255,255,255,.4);
+}
+.profile-name { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; }
+.profile-kapal { font-size: .85rem; opacity: .75; margin-top: .2rem; }
+.profile-stats { display: flex; gap: 2rem; margin-top: 1rem; }
+.ps-item { text-align: center; }
+.ps-val { font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 600; }
+.ps-label { font-size: .7rem; opacity: .7; text-transform: uppercase; letter-spacing: .05em; }
+
+/* ====== BTNS ====== */
+.btn {
+  font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .9rem;
+  padding: .7rem 1.5rem; border-radius: var(--radius-sm); border: none;
+  cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: .4rem;
+}
+.btn-primary { background: var(--ocean); color: #fff; }
+.btn-primary:hover { background: var(--ocean-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,109,91,.25); }
+.btn-secondary { background: var(--bg2); color: var(--ocean-dark); border: 1.5px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
+.btn-teal { background: var(--teal); color: #fff; }
+.btn-teal:hover { background: #0097a7; }
+.btn-full { width: 100%; justify-content: center; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 300;
+  background: var(--ocean-dark); color: #fff;
+  padding: .9rem 1.4rem; border-radius: var(--radius-sm);
+  font-size: .875rem; font-weight: 600;
+  display: flex; align-items: center; gap: .6rem;
+  transform: translateY(80px); opacity: 0;
+  transition: all .35s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 8px 32px rgba(0,0,0,.25);
+  max-width: 340px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { font-size: 1.2rem; }
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 1024px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .dash-grid { grid-template-columns: 1fr; }
+  .reward-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar { display: none; position: fixed; left: 0; top: 56px; z-index: 40; width: 240px; height: calc(100vh - 56px); }
+  .sidebar.open { display: flex; }
+  .main-content { max-height: calc(100vh - 56px); padding: 1.25rem; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .sampah-selector { grid-template-columns: repeat(2, 1fr); }
+  .reward-grid { grid-template-columns: 1fr 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .profile-stats { gap: 1rem; }
+  .hamburger-nav { display: flex !important; }
+}
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .reward-grid { grid-template-columns: 1fr; }
+  .sampah-selector { grid-template-columns: 1fr 1fr; }
+  .poin-strip { flex-direction: column; align-items: flex-start; gap: .5rem; }
+}
+.hamburger-nav {
+  display: none; width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(255,255,255,.1); align-items: center; justify-content: center;
+  cursor: pointer; flex-direction: column; gap: 5px;
+}
+.hamburger-nav span { width: 18px; height: 2px; background: #fff; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <div class="hamburger-nav" onclick="toggleSidebar()">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="topbar-brand">
+        <div class="logo">🌊</div>
+        Bank Sampah Laut Digital
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-notif" onclick="showToast('📢 2 notifikasi baru')">
+        🔔
+        <div class="notif-dot"></div>
+      </div>
+      <div class="topbar-user" onclick="navigate('profil')">
+        <div class="user-avatar">PJ</div>
+        <span>Pak Joko</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section-label">Menu Utama</div>
+    <div class="nav-item active" onclick="navigate('dashboard')">
+      <span class="nav-icon">🏠</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="navigate('setoran')">
+      <span class="nav-icon">🗑</span> Input Setoran
+      <span class="nav-badge">+</span>
+    </div>
+    <div class="nav-item" onclick="navigate('tukar')">
+      <span class="nav-icon">🎁</span> Tukar Poin
+    </div>
+    <div class="nav-item" onclick="navigate('riwayat')">
+      <span class="nav-icon">📋</span> Riwayat
+    </div>
+
+    <div class="sidebar-section-label">Informasi</div>
+    <div class="nav-item" onclick="navigate('profil')">
+      <span class="nav-icon">👤</span> Profil Nelayan
+    </div>
+    <div class="nav-item" onclick="navigate('info')">
+      <span class="nav-icon">ℹ️</span> Panduan & Info
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content" id="main">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page active" id="page-dashboard">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-sub">Selamat datang, <strong>Pak Joko</strong>! Kapal: <em>Laut Bersih-01</em> · Desa Bondo, Jepara</p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card ocean">
+          <div class="kpi-label">Total Poin Aktif</div>
+          <div class="kpi-val" id="kpi-poin">1.250</div>
+          <div class="kpi-delta up">↑ +100 minggu ini</div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-label">Total Sampah Terkumpul</div>
+          <div class="kpi-val amber" id="kpi-kg">42 kg</div>
+          <div class="kpi-delta up">↑ +8 kg minggu ini</div>
+        </div>
+        <div class="kpi-card teal">
+          <div class="kpi-label">Poin Sudah Ditukar</div>
+          <div class="kpi-val teal">850</div>
+          <div class="kpi-delta">Rp 85.000 ekuivalen</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Setoran Bulan Ini</div>
+          <div class="kpi-val green">7×</div>
+          <div class="kpi-delta up">Aktif melaut</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-title">📊 Aktivitas Terbaru</div>
+          <div class="activity-list" id="activityList"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1.25rem;">
+          <div class="card">
+            <div class="card-title">🏆 Top Nelayan Minggu Ini</div>
+            <div class="rank-list" id="rankList"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">♻️ Sistem Poin</div>
+            <div style="display:flex;flex-direction:column;gap:.6rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem .8rem;background:var(--teal-light);border-radius:10px;">
+                <span style="font-size:.85rem;font-weight:600;">🍾 Botol Plastik / kg</span>
+                <span style="font-family:'JetBrains Mono',monospace;color:var(--ocean);font-weight:700;">10 poin</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem .8rem;background:var(--amber-light);border-radius:10px;">
+                <span style="font-size:.85rem;font-weight:600;">🛍 Plastik Campuran / kg</span>
+                <span style="font-family:'JetBrains Mono',monospace;color:var(--amber);font-weight:700;">5 poin</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem .8rem;background:var(--coral-light);border-radius:10px;">
+                <span style="font-size:.85rem;font-weight:600;">📦 Styrofoam / kg</span>
+                <span style="font-family:'JetBrains Mono',monospace;color:var(--coral);font-weight:700;">3 poin</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SETORAN ===== -->
+    <div class="page" id="page-setoran">
+      <h1 class="page-title">Input Setoran Sampah</h1>
+      <p class="page-sub">Catat sampah plastik yang dibawa dari laut hari ini</p>
+
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start;">
+        <div class="card">
+          <div class="card-title">📝 Form Setoran</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Nama Nelayan</label>
+              <input type="text" id="f-nama" value="Pak Joko" placeholder="Nama nelayan...">
+            </div>
+            <div class="form-group">
+              <label>No. Kapal</label>
+              <input type="text" id="f-kapal" value="LB-01" placeholder="Kode kapal...">
+            </div>
+            <div class="form-group">
+              <label>Tanggal Setoran</label>
+              <input type="date" id="f-tanggal">
+            </div>
+            <div class="form-group">
+              <label>Nama Petugas Penerima</label>
+              <input type="text" id="f-petugas" placeholder="Nama petugas...">
+            </div>
+          </div>
+
+          <div style="margin:1.5rem 0 .75rem;">
+            <label style="display:block;margin-bottom:.75rem;">Jenis Sampah</label>
+            <div class="sampah-selector" id="sampahSelector">
+              <div class="sampah-opt selected" data-jenis="botol" data-poin="10" onclick="toggleSampah(this)">
+                <div class="sampah-icon">🍾</div>
+                <div class="sampah-name">Botol Plastik</div>
+                <div class="sampah-poin">10 poin/kg</div>
+              </div>
+              <div class="sampah-opt" data-jenis="campuran" data-poin="5" onclick="toggleSampah(this)">
+                <div class="sampah-icon">🛍</div>
+                <div class="sampah-name">Plastik Campuran</div>
+                <div class="sampah-poin">5 poin/kg</div>
+              </div>
+              <div class="sampah-opt" data-jenis="styro" data-poin="3" onclick="toggleSampah(this)">
+                <div class="sampah-icon">📦</div>
+                <div class="sampah-name">Styrofoam</div>
+                <div class="sampah-poin">3 poin/kg</div>
+              </div>
+              <div class="sampah-opt" data-jenis="kantong" data-poin="5" onclick="toggleSampah(this)">
+                <div class="sampah-icon">🗑</div>
+                <div class="sampah-name">Kantong Plastik</div>
+                <div class="sampah-poin">5 poin/kg</div>
+              </div>
+              <div class="sampah-opt" data-jenis="ember" data-poin="4" onclick="toggleSampah(this)">
+                <div class="sampah-icon">🪣</div>
+                <div class="sampah-name">Plastik Keras</div>
+                <div class="sampah-poin">4 poin/kg</div>
+              </div>
+              <div class="sampah-opt" data-jenis="lain" data-poin="2" onclick="toggleSampah(this)">
+                <div class="sampah-icon">🗂</div>
+                <div class="sampah-name">Lainnya</div>
+                <div class="sampah-poin">2 poin/kg</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Berat Sampah (kg)</label>
+              <input type="number" id="f-berat" min="0.1" step="0.1" placeholder="0.0" oninput="hitungPoin()">
+            </div>
+            <div class="form-group">
+              <label>Kondisi Sampah</label>
+              <select id="f-kondisi">
+                <option>Kering</option>
+                <option>Basah</option>
+                <option>Campuran</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>Catatan (opsional)</label>
+              <textarea id="f-catatan" placeholder="Lokasi pengambilan, kondisi khusus..."></textarea>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:.75rem;margin-top:1rem;">
+            <button class="btn btn-primary" style="flex:1;" onclick="submitSetoran()">✅ Simpan & Verifikasi QR</button>
+            <button class="btn btn-secondary" onclick="resetForm()">↺ Reset</button>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:1.25rem;">
+          <div class="poin-preview">
+            <div class="poin-preview-label">Estimasi Poin Didapat</div>
+            <div class="poin-preview-num" id="prevPoin">0</div>
+            <div class="poin-preview-sub" id="prevDetail">Pilih jenis & isi berat sampah</div>
+          </div>
+          <div class="card">
+            <div class="card-title">📋 Panduan Singkat</div>
+            <div style="display:flex;flex-direction:column;gap:.7rem;">
+              <div style="display:flex;gap:.6rem;align-items:flex-start;font-size:.83rem;color:var(--text2);">
+                <span style="color:var(--ocean);font-weight:700;flex-shrink:0;">1.</span>
+                Pilih jenis sampah yang dibawa
+              </div>
+              <div style="display:flex;gap:.6rem;align-items:flex-start;font-size:.83rem;color:var(--text2);">
+                <span style="color:var(--ocean);font-weight:700;flex-shrink:0;">2.</span>
+                Isi berat sampah hasil timbangan
+              </div>
+              <div style="display:flex;gap:.6rem;align-items:flex-start;font-size:.83rem;color:var(--text2);">
+                <span style="color:var(--ocean);font-weight:700;flex-shrink:0;">3.</span>
+                Klik Simpan lalu scan QR Code untuk verifikasi
+              </div>
+              <div style="display:flex;gap:.6rem;align-items:flex-start;font-size:.83rem;color:var(--text2);">
+                <span style="color:var(--ocean);font-weight:700;flex-shrink:0;">4.</span>
+                Poin otomatis masuk ke akun nelayan
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TUKAR POIN ===== -->
+    <div class="page" id="page-tukar">
+      <h1 class="page-title">Tukar Poin</h1>
+      <p class="page-sub">Gunakan poin untuk kebutuhan melaut & sehari-hari</p>
+
+      <div class="poin-strip">
+        <div class="poin-strip-left">
+          <span class="poin-strip-label">💎 Poin Tersedia</span>
+          <span class="poin-strip-val" id="poinStrip">1.250 poin</span>
+        </div>
+        <span class="poin-strip-right">♻️</span>
+      </div>
+
+      <div class="reward-grid" id="rewardGrid"></div>
+    </div>
+
+    <!-- ===== RIWAYAT ===== -->
+    <div class="page" id="page-riwayat">
+      <h1 class="page-title">Riwayat Transaksi</h1>
+      <p class="page-sub">Semua setoran sampah dan penukaran poin</p>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterRiwayat('all',this)">Semua</button>
+        <button class="filter-btn" onclick="filterRiwayat('setoran',this)">Setoran</button>
+        <button class="filter-btn" onclick="filterRiwayat('tukar',this)">Penukaran</button>
+        <button class="filter-btn" onclick="filterRiwayat('verif',this)">Terverifikasi</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table id="riwayatTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tanggal</th>
+                <th>Jenis</th>
+                <th>Keterangan</th>
+                <th>Berat / Item</th>
+                <th>Poin</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="riwayatBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROFIL ===== -->
+    <div class="page" id="page-profil">
+      <h1 class="page-title">Profil Nelayan</h1>
+      <p class="page-sub">Data dan statistik akun nelayan</p>
+      <div class="profile-hero">
+        <div class="profile-avatar">🎣</div>
+        <div>
+          <div class="profile-name">Pak Joko Susanto</div>
+          <div class="profile-kapal">Kapal: <strong>Laut Bersih-01</strong> · Desa Bondo, Kec. Bangsri, Jepara</div>
+          <div class="profile-stats">
+            <div class="ps-item"><div class="ps-val" id="p-poin">1.250</div><div class="ps-label">Poin Aktif</div></div>
+            <div class="ps-item"><div class="ps-val">42 kg</div><div class="ps-label">Total Sampah</div></div>
+            <div class="ps-item"><div class="ps-val">7×</div><div class="ps-label">Setoran Bln Ini</div></div>
+            <div class="ps-item"><div class="ps-val">🥈 #2</div><div class="ps-label">Ranking</div></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+        <div class="card">
+          <div class="card-title">📄 Data Diri</div>
+          <div class="form-grid">
+            <div class="form-group"><label>Nama Lengkap</label><input value="Joko Susanto"></div>
+            <div class="form-group"><label>No. Telepon</label><input value="0812-3456-7890"></div>
+            <div class="form-group"><label>No. KTP</label><input value="3320xxxxxxxxxxxx"></div>
+            <div class="form-group"><label>Desa</label><input value="Bondo, Bangsri, Jepara"></div>
+            <div class="form-group full"><label>No. Kapal Terdaftar</label><input value="LB-01 — Laut Bersih-01"></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:1rem;" onclick="showToast('✅ Data berhasil disimpan!')">Simpan Perubahan</button>
+        </div>
+        <div class="card">
+          <div class="card-title">🏅 Pencapaian</div>
+          <div style="display:flex;flex-direction:column;gap:.75rem;" id="badgeList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== INFO ===== -->
+    <div class="page" id="page-info">
+      <h1 class="page-title">Panduan & Info Program</h1>
+      <p class="page-sub">Satu Kapal, Satu Bank Sampah Laut Digital — Desa Bondo, Jepara</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+        <div class="card">
+          <div class="card-title">🎯 Tujuan Program</div>
+          <p style="color:var(--text2);font-size:.9rem;line-height:1.75;">
+            Program ini bertujuan mengurangi sampah plastik di laut sekaligus memberikan manfaat ekonomi nyata bagi nelayan melalui sistem poin digital yang mudah, transparan, dan terverifikasi.
+          </p>
+          <ul style="margin-top:1rem;padding-left:1.25rem;color:var(--text2);font-size:.875rem;line-height:2;">
+            <li>Mengurangi pencemaran plastik di laut</li>
+            <li>Meningkatkan pendapatan tambahan nelayan</li>
+            <li>Membangun kebiasaan peduli lingkungan</li>
+            <li>Mendukung industri daur ulang lokal</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">⚙️ Mekanisme Kerja</div>
+          <div style="display:flex;flex-direction:column;gap:.7rem;">
+            <div style="display:flex;gap:.75rem;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--ocean);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;">1</div>
+              <div style="font-size:.875rem;color:var(--text2);padding-top:.25rem;">Kumpulkan sampah plastik saat melaut menggunakan wadah khusus di kapal</div>
+            </div>
+            <div style="display:flex;gap:.75rem;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--ocean);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;">2</div>
+              <div style="font-size:.875rem;color:var(--text2);padding-top:.25rem;">Saat tiba di pelabuhan, pilah sampah berdasarkan jenis dan serahkan ke petugas</div>
+            </div>
+            <div style="display:flex;gap:.75rem;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--ocean);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;">3</div>
+              <div style="font-size:.875rem;color:var(--text2);padding-top:.25rem;">Petugas menimbang, memasukkan data ke aplikasi, dan verifikasi via QR Code</div>
+            </div>
+            <div style="display:flex;gap:.75rem;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;">4</div>
+              <div style="font-size:.875rem;color:var(--text2);padding-top:.25rem;">Poin otomatis masuk ke akun nelayan dan bisa langsung ditukar</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🔄 Alur Sampah</div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;">
+            <div style="padding:.7rem 1rem;background:var(--teal-light);border-radius:10px;font-size:.85rem;font-weight:600;color:var(--ocean-dark);">♻️ Sampah bernilai ekonomi → Industri Daur Ulang</div>
+            <div style="text-align:center;color:var(--text3);font-size:.8rem;">atau</div>
+            <div style="padding:.7rem 1rem;background:var(--bg2);border-radius:10px;font-size:.85rem;font-weight:600;color:var(--text2);">🏛 Sampah non-daur ulang → Dinas Lingkungan Hidup (DLH)</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📞 Kontak & Lokasi</div>
+          <div style="display:flex;flex-direction:column;gap:.6rem;font-size:.875rem;color:var(--text2);">
+            <div>📍 <strong>Lokasi:</strong> Pelabuhan Bondo, Desa Bondo, Kec. Bangsri, Kab. Jepara</div>
+            <div>🕐 <strong>Jam Operasional:</strong> 05.00 – 15.00 WIB (setiap hari)</div>
+            <div>📞 <strong>Hotline:</strong> 0291-xxx-xxxx</div>
+            <div>👨‍💼 <strong>Koordinator:</strong> Tim Siswa SMK Pendamping</div>
+            <div>🏫 <strong>Didampingi oleh:</strong> 20 Siswa SMK Jepara</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- QR Modal -->
+<div class="modal-overlay" id="qrModal">
+  <div class="modal">
+    <div style="font-size:2rem;">✅</div>
+    <h3>Setoran Berhasil Dicatat!</h3>
+    <p>Scan QR Code berikut untuk verifikasi petugas</p>
+    <div class="qr-box" id="qrBox">
+      <canvas id="qrCanvas"></canvas>
+    </div>
+    <div id="qrInfo" style="margin-bottom:1rem;font-size:.82rem;color:var(--text2);"></div>
+    <button class="btn btn-primary btn-full" onclick="closeModal()">✓ Selesai & Tutup</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✅</span>
+  <span id="toastMsg">Berhasil!</span>
+</div>
+
+<script>
+// ===== STATE =====
+let state = {
+  poin: 1250,
+  riwayat: [
+    { id:7, tgl:'03/06/2026', jenis:'setoran', ket:'Botol Plastik', berat:'15 kg', poin:+150, status:'verif' },
+    { id:6, tgl:'01/06/2026', jenis:'tukar', ket:'Es Batu 50 kg', berat:'1 item', poin:-150, status:'selesai' },
+    { id:5, tgl:'30/05/2026', jenis:'setoran', ket:'Plastik Campuran', berat:'10 kg', poin:+50, status:'verif' },
+    { id:4, tgl:'28/05/2026', jenis:'setoran', ket:'Botol Plastik', berat:'10 kg', poin:+100, status:'verif' },
+    { id:3, tgl:'25/05/2026', jenis:'tukar', ket:'Sembako Paket A', berat:'1 item', poin:-200, status:'selesai' },
+    { id:2, tgl:'22/05/2026', jenis:'setoran', ket:'Styrofoam', berat:'8 kg', poin:+24, status:'verif' },
+    { id:1, tgl:'20/05/2026', jenis:'setoran', ket:'Kantong Plastik', berat:'12 kg', poin:+60, status:'verif' },
+  ],
+  selectedJenis: { jenis:'botol', poin:10 }
+};
+
+const rewards = [
+  { icon:'🛒', name:'Sembako Paket A', desc:'Beras 5kg, minyak 2L, gula 1kg', poin:200, badge:'Populer' },
+  { icon:'🧊', name:'Es Batu 50 kg', desc:'Es batu untuk keperluan melaut', poin:150 },
+  { icon:'⛽', name:'BBM Subsidi 5L', desc:'Solar subsidi untuk kapal', poin:300, badge:'Hemat' },
+  { icon:'📱', name:'Pulsa Rp 25.000', desc:'Semua operator tersedia', poin:50 },
+  { icon:'🎣', name:'Perlengkapan Pancing', desc:'Senar, kail, pelampung lengkap', poin:250 },
+  { icon:'🧴', name:'Sabun & Detergen', desc:'Paket kebersihan bulanan', poin:80 },
+  { icon:'🌾', name:'Sembako Paket B', desc:'Beras 10kg + kebutuhan pokok', poin:350, badge:'Premium' },
+  { icon:'💊', name:'Obat P3K', desc:'Kotak P3K lengkap untuk kapal', poin:120 },
+  { icon:'🔦', name:'Senter Kapal', desc:'Senter tahan air + baterai', poin:180 },
+];
+
+const topNelayan = [
+  { nama:'Pak Ahmad', kapal:'LB-03', poin:1850 },
+  { nama:'Pak Joko', kapal:'LB-01', poin:1250 },
+  { nama:'Bu Sari', kapal:'LB-07', poin:1120 },
+  { nama:'Pak Budi', kapal:'LB-02', poin:980 },
+  { nama:'Pak Warto', kapal:'LB-05', poin:740 },
+];
+
+const badges = [
+  { icon:'🌊', label:'Penjaga Laut', desc:'Kumpulkan 40+ kg sampah', unlocked:true },
+  { icon:'🏆', label:'Top 5 Nelayan', desc:'Masuk peringkat 5 besar', unlocked:true },
+  { icon:'⭐', label:'7 Setoran Berturut', desc:'Aktif 7 kali berturut-turut', unlocked:true },
+  { icon:'🔒', label:'Super Kolektor', desc:'Kumpulkan 100 kg sampah', unlocked:false },
+  { icon:'🔒', label:'Poin 5000', desc:'Capai 5000 poin kumulatif', unlocked:false },
+];
+
+// ===== NAVIGATE =====
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.toLowerCase().includes(page === 'dashboard' ? 'dashboard' :
+        page === 'setoran' ? 'setoran' : page === 'tukar' ? 'tukar' :
+        page === 'riwayat' ? 'riwayat' : page === 'profil' ? 'profil' : 'panduan')) {
+      n.classList.add('active');
+    }
+  });
+  if (page === 'riwayat') renderRiwayat('all');
+  if (page === 'tukar') updatePoinStrip();
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ===== RENDER ACTIVITY =====
+function renderActivity() {
+  const icons = { botol:'🍾', campuran:'🛍', styro:'📦', tukar:'🎁', kantong:'🗑' };
+  const classes = { setoran:'botol', tukar:'tukar' };
+  const list = document.getElementById('activityList');
+  list.innerHTML = state.riwayat.slice(0,5).map(r => `
+    <div class="activity-item">
+      <div class="act-icon ${r.jenis === 'tukar' ? 'tukar' : 'botol'}">${r.jenis === 'tukar' ? '🎁' : '♻️'}</div>
+      <div class="act-body">
+        <div class="act-name">${r.ket}</div>
+        <div class="act-desc">${r.berat} · ${r.tgl}</div>
+      </div>
+      <div class="act-right">
+        <div class="act-poin" style="color:${r.poin > 0 ? 'var(--ocean)' : 'var(--coral)'}">
+          ${r.poin > 0 ? '+' : ''}${r.poin} poin
+        </div>
+        <div class="act-time">${r.status === 'verif' ? '✅ Terverif.' : '🔄 Selesai'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== RENDER RANKING =====
+function renderRanking() {
+  const list = document.getElementById('rankList');
+  list.innerHTML = topNelayan.map((n, i) => `
+    <div class="rank-item">
+      <div class="rank-num rank-${i < 3 ? i+1 : 'other'}">${i+1}</div>
+      <div class="rank-name">${n.nama} <span style="font-size:.75rem;color:var(--text3);">(${n.kapal})</span></div>
+      <div class="rank-poin">${n.poin.toLocaleString()}</div>
+    </div>
+  `).join('');
+}
+
+// ===== RENDER REWARDS =====
+function renderRewards() {
+  const grid = document.getElementById('rewardGrid');
+  grid.innerHTML = rewards.map((r, i) => `
+    <div class="reward-card" onclick="tukarpoin(${i}, ${r.poin}, '${r.name}')">
+      ${r.badge ? `<div class="reward-badge">${r.badge}</div>` : ''}
+      <div class="reward-icon">${r.icon}</div>
+      <div class="reward-name">${r.name}</div>
+      <div class="reward-desc">${r.desc}</div>
+      <div class="reward-cost">♻️ ${r.poin} poin</div>
+    </div>
+  `).join('');
+}
+
+function tukarpoin(idx, cost, name) {
+  if (state.poin < cost) {
+    showToast('❌ Poin tidak cukup! Butuh ' + cost + ' poin');
+    return;
+  }
+  if (!confirm(`Tukar ${cost} poin dengan "${name}"?`)) return;
+  state.poin -= cost;
+  state.riwayat.unshift({
+    id: state.riwayat.length + 1,
+    tgl: new Date().toLocaleDateString('id-ID').replace(/\//g, '/'),
+    jenis: 'tukar', ket: name, berat: '1 item',
+    poin: -cost, status: 'selesai'
+  });
+  updateAllPoin();
+  renderRewards();
+  showToast('🎁 Berhasil menukar ' + name + '!');
+}
+
+function updatePoinStrip() {
+  document.getElementById('poinStrip').textContent = state.poin.toLocaleString() + ' poin';
+}
+function updateAllPoin() {
+  document.getElementById('kpi-poin').textContent = state.poin.toLocaleString();
+  document.getElementById('poinStrip').textContent = state.poin.toLocaleString() + ' poin';
+  document.getElementById('p-poin').textContent = state.poin.toLocaleString();
+}
+
+// ===== RENDER RIWAYAT =====
+function renderRiwayat(filter) {
+  const data = filter === 'all' ? state.riwayat :
+    state.riwayat.filter(r => filter === 'verif' ? r.status === 'verif' : r.jenis === filter);
+  const tbody = document.getElementById('riwayatBody');
+  const jenisMap = {
+    botol: '<span class="badge badge-botol">🍾 Botol</span>',
+    campuran: '<span class="badge badge-campuran">🛍 Campuran</span>',
+    styro: '<span class="badge badge-styro">📦 Styro</span>',
+    tukar: '<span class="badge badge-tukar">🎁 Penukaran</span>',
+    verif: '<span class="badge badge-verif">✅ Terverif.</span>',
+    selesai: '<span class="badge badge-tukar">✓ Selesai</span>',
+  };
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text3);">#${r.id}</span></td>
+      <td style="font-size:.85rem;">${r.tgl}</td>
+      <td>${r.jenis === 'tukar' ? jenisMap.tukar : '<span class="badge badge-botol">♻️ Setoran</span>'}</td>
+      <td style="font-size:.875rem;">${r.ket}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:.85rem;">${r.berat}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:700;color:${r.poin > 0 ? 'var(--ocean)' : 'var(--coral)'};">
+        ${r.poin > 0 ? '+' : ''}${r.poin}
+      </td>
+      <td>${r.status === 'verif' ? jenisMap.verif : jenisMap.selesai}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:2rem;">Tidak ada data</td></tr>';
+}
+
+function filterRiwayat(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRiwayat(filter);
+}
+
+// ===== SETORAN FORM =====
+function toggleSampah(el) {
+  document.querySelectorAll('.sampah-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  state.selectedJenis = { jenis: el.dataset.jenis, poin: parseInt(el.dataset.poin) };
+  hitungPoin();
+}
+
+function hitungPoin() {
+  const berat = parseFloat(document.getElementById('f-berat').value) || 0;
+  const total = Math.round(berat * state.selectedJenis.poin);
+  document.getElementById('prevPoin').textContent = total;
+  document.getElementById('prevDetail').textContent = berat > 0
+    ? `${berat} kg × ${state.selectedJenis.poin} poin/kg`
+    : 'Pilih jenis & isi berat sampah';
+}
+
+function resetForm() {
+  document.getElementById('f-berat').value = '';
+  document.getElementById('f-petugas').value = '';
+  document.getElementById('f-catatan').value = '';
+  document.getElementById('prevPoin').textContent = '0';
+  document.getElementById('prevDetail').textContent = 'Pilih jenis & isi berat sampah';
+}
+
+function submitSetoran() {
+  const nama = document.getElementById('f-nama').value;
+  const kapal = document.getElementById('f-kapal').value;
+  const berat = parseFloat(document.getElementById('f-berat').value);
+  if (!berat || berat <= 0) { showToast('⚠️ Isi berat sampah terlebih dahulu!'); return; }
+  const poin = Math.round(berat * state.selectedJenis.poin);
+  const now = new Date();
+  const tgl = now.toLocaleDateString('id-ID');
+  const jenisLabel = { botol:'Botol Plastik', campuran:'Plastik Campuran', styro:'Styrofoam', kantong:'Kantong Plastik', ember:'Plastik Keras', lain:'Lainnya' };
+
+  state.poin += poin;
+  state.riwayat.unshift({
+    id: state.riwayat.length + 1,
+    tgl, jenis:'setoran',
+    ket: jenisLabel[state.selectedJenis.jenis] || 'Sampah Plastik',
+    berat: berat + ' kg', poin: +poin, status:'verif'
+  });
+  document.getElementById('kpi-kg').textContent = (parseFloat(document.getElementById('kpi-kg').textContent) + berat).toFixed(0) + ' kg';
+  updateAllPoin();
+  renderActivity();
+
+  // Show QR Modal
+  const qrData = `BSLD|${nama}|${kapal}|${berat}kg|${state.selectedJenis.jenis}|${poin}poin|${now.toISOString()}`;
+  document.getElementById('qrInfo').innerHTML = `
+    <strong>${nama}</strong> · ${kapal}<br>
+    ${berat} kg ${jenisLabel[state.selectedJenis.jenis]} = <strong style="color:var(--ocean)">+${poin} poin</strong>
+  `;
+  drawQR(qrData);
+  document.getElementById('qrModal').classList.add('open');
+  resetForm();
+}
+
+// ===== SIMPLE QR DRAW =====
+function drawQR(text) {
+  const canvas = document.getElementById('qrCanvas');
+  const ctx = canvas.getContext('2d');
+  const size = 156;
+  canvas.width = size; canvas.height = size;
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, size, size);
+
+  // Simple visual pattern (decorative placeholder)
+  const cell = 6;
+  const cols = Math.floor(size / cell);
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) hash = ((hash << 5) - hash) + text.charCodeAt(i);
+
+  ctx.fillStyle = '#006d5b';
+  for (let r = 0; r < cols; r++) {
+    for (let c = 0; c < cols; c++) {
+      const bit = (hash ^ (r * 31 + c * 17 + r * c)) & 1;
+      if (bit) ctx.fillRect(c * cell, r * cell, cell, cell);
+    }
+  }
+  // Corner squares (QR-like)
+  const drawCorner = (x, y) => {
+    ctx.fillStyle = '#006d5b';
+    ctx.fillRect(x, y, cell*7, cell*7);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x+cell, y+cell, cell*5, cell*5);
+    ctx.fillStyle = '#006d5b';
+    ctx.fillRect(x+cell*2, y+cell*2, cell*3, cell*3);
+  };
+  drawCorner(0, 0); drawCorner(size - cell*7, 0); drawCorner(0, size - cell*7);
+}
+
+function closeModal() {
+  document.getElementById('qrModal').classList.remove('open');
+  showToast('✅ Setoran berhasil! Poin telah ditambahkan.');
+}
+
+// ===== BADGES =====
+function renderBadges() {
+  const list = document.getElementById('badgeList');
+  list.innerHTML = badges.map(b => `
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.7rem;border-radius:10px;background:${b.unlocked ? 'var(--green-light)' : 'var(--bg)'};">
+      <span style="font-size:1.5rem;">${b.icon}</span>
+      <div>
+        <div style="font-size:.875rem;font-weight:700;color:${b.unlocked ? 'var(--green)' : 'var(--text3)'};">${b.label}</div>
+        <div style="font-size:.75rem;color:var(--text3);">${b.desc}</div>
+      </div>
+      ${b.unlocked ? '<span style="margin-left:auto;font-size:.75rem;color:var(--green);font-weight:700;">✓</span>' : ''}
+    </div>
+  `).join('');
+}
+
+// ===== TOAST =====
+let toastTimer;
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ===== INIT =====
+document.getElementById('f-tanggal').value = new Date().toISOString().split('T')[0];
+renderActivity();
+renderRanking();
+renderRewards();
+renderBadges();
+</script>
+</body>
+</html>
